@@ -1,5 +1,7 @@
 import pandas as pd
 
+# основной файл, который писал Женя для TrOCR
+
 df = pd.read_csv(r'/home/jenyagutyra/trocr/dataset_new/data/train_recognition/labels.csv')
 # df.columns=['file_name', 'text']
 print(df.head())
