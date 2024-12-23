@@ -3,13 +3,12 @@ import pandas as pd
 # основной файл, который писал Женя для TrOCR
 
 df = pd.read_csv(r'/home/jenyagutyra/trocr/dataset_new/data/train_recognition/labels.csv')
-# df.columns=['file_name', 'text']
 print(df.head())
 
 from sklearn.model_selection import train_test_split
+from transformers import TrOCRProcessor
 
 train_df, test_df = train_test_split(df, test_size=0.2)
-# we reset the indices to start from zero
 train_df.reset_index(drop=True, inplace=True)
 test_df.reset_index(drop=True, inplace=True)
 
@@ -28,22 +27,17 @@ class IAMDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        # get file name + text
         file_name = self.df['file_name'][idx]
         text = self.df['text'][idx]
-        # prepare image (i.e. resize + normalize)
         image = Image.open(self.root_dir + file_name).convert("RGB")
         pixel_values = self.processor(image, return_tensors="pt").pixel_values
-        # add labels (input_ids) by encoding the text
         labels = self.processor.tokenizer(text,
                                           padding="max_length",
                                           max_length=self.max_target_length).input_ids
-        # important: make sure that PAD tokens are ignored by the loss function
         labels = [label if label != self.processor.tokenizer.pad_token_id else -100 for label in labels]
 
         encoding = {"pixel_values": pixel_values.squeeze(), "labels": torch.tensor(labels)}
         return encoding
-from transformers import TrOCRProcessor
 
 processor = TrOCRProcessor.from_pretrained("raxtemur/trocr-base-ru")
 train_dataset = IAMDataset(root_dir=r'/home/jenyagutyra/trocr/dataset_new/train_recognition/images/',
@@ -65,13 +59,10 @@ print(label_str)
 from transformers import VisionEncoderDecoderModel
 
 model = VisionEncoderDecoderModel.from_pretrained("raxtemur/trocr-base-ru")
-# set special tokens used for creating the decoder_input_ids from the labels
 model.config.decoder_start_token_id = processor.tokenizer.cls_token_id
 model.config.pad_token_id = processor.tokenizer.pad_token_id
-# make sure vocab size is set correctly
 model.config.vocab_size = model.config.decoder.vocab_size
 
-# set beam search parameters
 model.config.eos_token_id = processor.tokenizer.sep_token_id
 model.config.max_length = 64
 model.config.early_stopping = True
@@ -107,7 +98,6 @@ def compute_metrics(pred):
     return {"cer": cer}
 from transformers import default_data_collator
 
-# instantiate trainer
 trainer = Seq2SeqTrainer(
     model=model,
     tokenizer=processor.feature_extractor,
@@ -120,6 +110,3 @@ trainer = Seq2SeqTrainer(
 print('Start training')
 trainer.train()
 
-
-# model.save_pretrained('./trained_model')
-# processor.save_pretrained('./trained_model')
