@@ -3,7 +3,7 @@ from PIL import Image
 import os
 
 TESSERACT_PATH = r'/home/dmitryshatalov/Documents/tesseract'
-TESSDATA_DIR = r'/home/dmitryshatalov/Documents/tesseract-main/only_rus_best' #здесь лежит ТОЛЬКО наша модель rus_best, конфиг требует ссылку на папку с моделями, а не на конкретную модель
+TESSDATA_DIR = r'/home/dmitryshatalov/Documents/tesseract-main/only_rus_best' 
 #может, буду фиксить позже
 MODEL_NAME = 'rus_best'
 
