@@ -4,7 +4,6 @@ import os
 
 TESSERACT_PATH = r'/home/dmitryshatalov/Documents/tesseract'
 TESSDATA_DIR = r'/home/dmitryshatalov/Documents/tesseract-main/only_rus_best' 
-#может, буду фиксить позже
 MODEL_NAME = 'rus_best'
 
 
